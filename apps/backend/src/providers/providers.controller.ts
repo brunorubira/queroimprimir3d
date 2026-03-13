@@ -44,8 +44,10 @@ export class ProvidersController {
   }
 
   // Get a specific provider by id
+  // MUST be last to avoid catching "me" as an id
   @Get(':id')
   findOne(@Param('id') id: string) {
+    if (id === 'me') return null; // safety guard
     return this.providersService.findOne(id);
   }
 }
