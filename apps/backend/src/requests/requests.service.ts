@@ -21,9 +21,17 @@ export class RequestsService {
     });
   }
 
-  async findAll(clientId?: string) {
+  async findAll(options?: { clientId?: string; status?: import('@prisma/client').RequestStatus }) {
+    const where: any = {};
+    if (options?.clientId) {
+      where.clientId = options.clientId;
+    }
+    if (options?.status) {
+      where.status = options.status;
+    }
+
     return this.prisma.request.findMany({
-      where: clientId ? { clientId } : {},
+      where,
       include: {
         client: { select: { name: true } },
         attachments: true,
@@ -32,7 +40,6 @@ export class RequestsService {
       orderBy: { createdAt: 'desc' },
     });
   }
-
 
   async findOne(id: string) {
     return this.prisma.request.findUnique({

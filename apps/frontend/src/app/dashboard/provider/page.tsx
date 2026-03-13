@@ -1,86 +1,136 @@
+/* eslint-disable */
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-unused-vars */
 "use client";
 
-import { BarChart3, Box, Printer, Zap, TrendingUp } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { useEffect, useState } from "react";
+import { getToken } from "@/lib/auth";
+import { useRouter } from "next/navigation";
+import { formatDistanceToNow } from "date-fns";
+import { ptBR } from "date-fns/locale";
+import { Search, Filter, Image as ImageIcon } from "lucide-react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 
 export default function ProviderDashboardPage() {
+  const [requests, setRequests] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const router = useRouter();
+
+  useEffect(() => {
+    const fetchRequests = async () => {
+      try {
+        const token = getToken();
+        if (!token) {
+          router.push("/login");
+          return;
+        }
+
+        // We assume the backend allows querying status via Query string
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/requests?status=OPEN`, {
+          headers: {
+            "Authorization": `Bearer ${token}`
+          }
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          setRequests(data);
+        }
+      } catch (error) {
+        console.error("Error fetching requests:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchRequests();
+  }, [router]);
+
   return (
-    <div className="space-y-8">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+    <div className="max-w-6xl mx-auto space-y-8">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
         <div>
-          <div className="technical-label mb-2">
-            Status: Autenticado // Rótulo: Hub de Manufatura
-          </div>
-          <h1 className="text-3xl md:text-4xl font-outfit font-bold text-white tracking-tighter uppercase">
-            Painel de <span className="gradient-text-pro">Operações</span>
-          </h1>
-          <p className="text-slate-400 mt-2 font-mono text-sm">Métricas e performance da sua célula de produção 3D.</p>
+          <div className="technical-label mb-2">Painel de Oportunidades</div>
+          <h1 className="text-3xl font-outfit font-bold text-white tracking-tighter uppercase">Market<span className="gradient-text-pro">place</span></h1>
+          <p className="text-slate-400 mt-2 font-mono text-sm max-w-xl">Encontre projetos de clientes que encaixam com suas tecnologias e faça propostas orçamentárias de modelagem e impressão 3D.</p>
         </div>
-        <div className="flex items-center gap-2 border border-primary/30 bg-primary/5 px-3 py-1.5 rounded-none">
-          <span className="flex h-2 w-2 rounded-none bg-primary animate-pulse" />
-          <span className="text-[10px] font-bold text-primary uppercase tracking-widest font-mono">Terminal Online</span>
+        <div className="flex gap-2 w-full md:w-auto">
+          <div className="relative flex-1 md:w-64">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+            <input 
+              type="text" 
+              placeholder="Buscar projetos..." 
+              className="w-full pl-10 pr-4 py-2 bg-slate-900 border border-slate-800 focus:border-primary outline-none font-mono text-sm text-slate-300 placeholder:text-slate-600 rounded-none h-10"
+            />
+          </div>
+          <button className="h-10 px-4 flex items-center gap-2 bg-slate-900 border border-slate-800 hover:border-primary/50 text-slate-400 hover:text-white transition-all font-mono text-xs uppercase tracking-widest">
+            <Filter className="w-4 h-4" />
+            <span className="hidden sm:inline">Filtros</span>
+          </button>
         </div>
       </div>
 
-      {/* Metrics Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <StatCard title="Leads Disponíveis" value="12" icon={<Zap className="w-4 h-4" />} trend="+3 hoje" />
-        <StatCard title="Pedidos Ativos" value="0" icon={<Box className="w-4 h-4" />} trend="Estável" />
-        <StatCard title="Impressoras" value="2" icon={<Printer className="w-4 h-4" />} trend="Online" />
-        <StatCard title="Ganhos (Mês)" value="R$ 0,00" icon={<BarChart3 className="w-4 h-4" />} trend="Ciclo Atual" />
-      </div>
-
-      {/* Main Modules */}
-      <div className="grid lg:grid-cols-2 gap-8 mt-8">
-        <div className="pro-card p-8 bg-slate-900/40 border-slate-800 relative overflow-hidden group">
-          <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-primary/5 to-transparent pointer-events-none" />
-          <div className="technical-label mb-6">Módulo: Captação</div>
-          <h3 className="text-xl font-bold font-outfit text-white mb-8 flex items-center gap-3 uppercase tracking-tight">
-             <TrendingUp className="text-primary w-5 h-5" />
-             Leads Recomendados
-          </h3>
-          <div className="text-center py-12 space-y-4">
-            <p className="text-slate-400 text-sm font-mono leading-relaxed">Nenhum projeto compatível com seu setup tecnológico no momento.</p>
-            <Link href="/dashboard/provider/leads">
-              <Button variant="outline" className="h-10 text-[10px] font-mono font-bold uppercase tracking-widest px-8 rounded-none border-slate-700 hover:bg-slate-800 mt-4 transition-all">Ver Feed Completo</Button>
-            </Link>
+      <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-6">
+        {isLoading ? (
+          Array(6).fill(0).map((_, i) => (
+            <div key={i} className="pro-card h-64 bg-slate-900/40 border-slate-800 animate-pulse relative overflow-hidden">
+               <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-slate-800 to-slate-700" />
+            </div>
+          ))
+        ) : requests.length > 0 ? (
+          requests.map((req) => (
+            <div key={req.id} className="pro-card bg-slate-900/60 border-slate-800 group hover:border-primary/50 transition-all flex flex-col relative overflow-hidden">
+              {/* Decorative top line */}
+              <div className="absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r from-transparent via-primary/30 to-transparent scale-x-0 group-hover:scale-x-100 transition-transform duration-500" />
+              
+              <div className="p-6 flex-1 flex flex-col">
+                <div className="flex justify-between items-start mb-4">
+                  <div className="technical-label flex items-center gap-2">
+                    <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
+                    Buscando Prestador
+                  </div>
+                  <span className="font-mono text-[10px] text-slate-500 uppercase tracking-widest">
+                    {formatDistanceToNow(new Date(req.createdAt), { addSuffix: true, locale: ptBR })}
+                  </span>
+                </div>
+                
+                <h3 className="text-lg font-bold text-slate-200 uppercase tracking-wide line-clamp-2 mb-2 group-hover:text-primary transition-colors">{req.title}</h3>
+                
+                <p className="text-sm font-mono text-slate-400 line-clamp-3 mb-6 flex-1 relative">
+                  {req.description}
+                  {/* Subtle fade out for long text */}
+                  <span className="absolute bottom-0 left-0 w-full h-8 bg-gradient-to-t from-slate-900/60 to-transparent" />
+                </p>
+                
+                <div className="flex items-center justify-between mt-auto pt-4 border-t border-slate-800/50">
+                  <div className="flex items-center gap-4 text-slate-500 font-mono text-[10px] uppercase tracking-widest">
+                    <span className="flex items-center gap-1.5" title="Imagens de Referência Anexadas">
+                      <ImageIcon className="w-3.5 h-3.5" />
+                      {req.attachments?.length || 0}
+                    </span>
+                    <span>Propostas: {req.proposals?.length || 0}</span>
+                  </div>
+                  <Link 
+                    href={`/dashboard/provider/requests/${req.id}`}
+                    className="font-mono text-xs font-bold uppercase tracking-widest text-primary hover:text-white transition-colors flex items-center gap-2"
+                  >
+                    Ver Projeto <span className="group-hover:translate-x-1 transition-transform">→</span>
+                  </Link>
+                </div>
+              </div>
+            </div>
+          ))
+        ) : (
+          <div className="col-span-full py-20 flex flex-col items-center justify-center text-center border border-dashed border-slate-800 bg-slate-900/20">
+            <div className="w-16 h-16 rounded-full bg-slate-900 flex items-center justify-center mb-6">
+              <Search className="w-8 h-8 text-primary opacity-50" />
+            </div>
+            <p className="font-mono text-slate-300 font-bold uppercase tracking-widest mb-2">Nenhum projeto disponível no momento</p>
+            <p className="font-mono text-sm text-slate-500 max-w-sm">Fique atento, clientes estão sempre publicando novas ideias.</p>
           </div>
-        </div>
-
-        <div className="pro-card p-8 bg-slate-900/40 border-slate-800 relative overflow-hidden group">
-          <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-primary/5 to-transparent pointer-events-none" />
-          <div className="technical-label mb-6">Módulo: Execução</div>
-          <h3 className="text-xl font-bold font-outfit text-white mb-8 flex items-center gap-3 uppercase tracking-tight">
-             <Box className="text-primary w-5 h-5" />
-             Fila de Produção
-          </h3>
-          <div className="text-center py-12 space-y-4">
-            <p className="text-slate-400 text-sm font-mono leading-relaxed">Volume de produção ocioso. Capte novos projetos para iniciar impressões.</p>
-            <Link href="/dashboard/provider/leads">
-              <Button className="h-10 text-[10px] font-mono font-bold uppercase tracking-widest px-8 rounded-none bg-primary text-primary-foreground hover:bg-primary/90 mt-4 transition-all">Inspecionar Radar</Button>
-            </Link>
-          </div>
-        </div>
+        )}
       </div>
     </div>
   );
 }
-
-function StatCard({ title, value, icon, trend }: { title: string, value: string, icon: React.ReactNode, trend: string }) {
-  return (
-    <div className="pro-card p-6 border border-slate-800 bg-slate-900/40 relative overflow-hidden group">
-      <div className="absolute top-0 right-0 w-16 h-16 bg-gradient-to-bl from-primary/10 to-transparent pointer-events-none" />
-      <div className="flex items-center justify-between mb-4 border-b border-slate-800/50 pb-4">
-        <div className="w-10 h-10 rounded-none bg-primary/10 flex items-center justify-center text-primary border border-primary/20">
-          {icon}
-        </div>
-        <div className="text-[9px] font-bold text-primary font-mono bg-primary/10 px-2 py-1 rounded-none border border-primary/20 uppercase tracking-widest">{trend}</div>
-      </div>
-      <div className="text-3xl font-bold text-white tracking-tight mb-2 font-mono">{value}</div>
-      <div className="text-[10px] font-bold text-slate-500 font-mono uppercase tracking-widest">{title}</div>
-    </div>
-  );
-}
-

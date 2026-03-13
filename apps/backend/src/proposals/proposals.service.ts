@@ -11,6 +11,16 @@ export class ProposalsService {
     });
   }
 
+  async findAllByProvider(providerId: string) {
+    return this.prisma.proposal.findMany({
+      where: { providerId },
+      include: {
+        request: true,
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+  }
+
   async findByRequest(requestId: string) {
     return this.prisma.proposal.findMany({
       where: { requestId },

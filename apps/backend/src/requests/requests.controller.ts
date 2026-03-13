@@ -14,9 +14,19 @@ export class RequestsController {
   }
 
   @Get()
-  async findAll(@Request() req) {
-    // If the user wants to see only their requests
-    return this.requestsService.findAll(req.user.id);
+  async findAll(@Request() req, @Query('status') status?: string) {
+    // Clients only see their own requests.
+    if (req.user.role === 'CLIENT') {
+      return this.requestsService.findAll({ 
+        clientId: req.user.id, 
+        status: status as any 
+      });
+    }
+    
+    // Providers can see requests across all clients, filtered by status (default OPEN)
+    return this.requestsService.findAll({ 
+      status: (status as any) || 'OPEN' 
+    });
   }
 
   @Get(':id')
