@@ -1,56 +1,62 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { RequestStatus } from '@prisma/client';
 
 @Injectable()
 export class RequestsService {
   constructor(private prisma: PrismaService) {}
 
-  async create(clientId: string, data: { title: string; description: string; attachments?: { url: string; filename: string; mimetype: string }[] }) {
+  async create(clientId: string, data: { title: string; description: string }) {
     return this.prisma.request.create({
       data: {
         title: data.title,
         description: data.description,
+        status: RequestStatus.OPEN,
         clientId,
-        attachments: {
-          create: data.attachments || [],
-        },
-      },
-      include: {
-        attachments: true,
       },
     });
   }
 
-  async findAll(options?: { clientId?: string; status?: import('@prisma/client').RequestStatus }) {
-    const where: any = {};
-    if (options?.clientId) {
-      where.clientId = options.clientId;
-    }
-    if (options?.status) {
-      where.status = options.status;
-    }
-
+  async findMyRequests(clientId: string) {
     return this.prisma.request.findMany({
-      where,
+      where: { clientId },
       include: {
-        client: { select: { name: true } },
-        attachments: true,
-        proposals: true,
+        proposals: {
+          select: { id: true, price: true, status: true, provider: { include: { user: { select: { name: true } } } } }
+        },
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+  }
+
+  async findAllOpen() {
+    return this.prisma.request.findMany({
+      where: { status: RequestStatus.OPEN },
+      include: {
+        client: { select: { name: true, id: true } },
+        _count: { select: { proposals: true } }, // How many proposals received
       },
       orderBy: { createdAt: 'desc' },
     });
   }
 
   async findOne(id: string) {
-    return this.prisma.request.findUnique({
+    const request = await this.prisma.request.findUnique({
       where: { id },
       include: {
-        client: { select: { name: true } },
-        attachments: true,
+        client: { select: { name: true, id: true } },
         proposals: {
-          include: { provider: { include: { user: { select: { name: true } } } } },
-        },
+          include: {
+            provider: {
+              include: { user: { select: { name: true } } }
+            }
+          }
+        }
       },
     });
+    if (!request) {
+      throw new NotFoundException('Request not found');
+    }
+    return request;
   }
 }

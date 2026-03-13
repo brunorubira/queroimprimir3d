@@ -28,7 +28,7 @@ export default function ClientDashboardPage() {
       return;
     }
     
-    fetch(`${process.env.NEXT_PUBLIC_API_URL}/requests`, {
+    fetch(`${process.env.NEXT_PUBLIC_API_URL}/requests/my`, {
       headers: { "Authorization": `Bearer ${token}` }
     })
       .then(res => {

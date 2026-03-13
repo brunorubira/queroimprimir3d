@@ -1,66 +1,53 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Box, Clock, CheckCircle2, ChevronRight, ExternalLink } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
-import { cn } from "@/lib/utils";
 import { getToken } from "@/lib/auth";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
+import { Badge } from "@/components/ui/badge";
+import { Package, ChevronRight, ShoppingBag, CheckCircle2 } from "lucide-react";
+import { formatDistanceToNow } from "date-fns";
+import { ptBR } from "date-fns/locale";
 
-interface Order {
-  id: string;
-  status: string;
-  createdAt: string;
-  request: {
-    title: string;
-    description: string;
-  };
-  proposal: {
-    price: number;
-    provider: {
-      user: {
-        name: string;
-      };
-    };
-  };
-}
+const ORDER_STATUS_LABEL: Record<string, string> = {
+  CREATED: "Em Andamento",
+  IN_PRODUCTION: "Em Produção",
+  COMPLETED: "Concluído",
+  CANCELLED: "Cancelado",
+};
+
+const ORDER_STATUS_VARIANT: Record<string, string> = {
+  CREATED: "secondary",
+  IN_PRODUCTION: "default",
+  COMPLETED: "outline",
+  CANCELLED: "destructive",
+};
 
 export default function ClientOrdersPage() {
-  const [orders, setOrders] = useState<Order[]>([]);
+  const router = useRouter();
+  const [orders, setOrders] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const token = getToken();
-    if (!token) {
-      window.location.href = "/auth/login";
-      return;
-    }
-    
-    fetch(`${process.env.NEXT_PUBLIC_API_URL}/orders`, {
-      headers: { "Authorization": `Bearer ${token}` }
-    })
-      .then(res => {
-        if (!res.ok) throw new Error("Não autorizado");
-        return res.json();
-      })
-      .then(data => {
-        setOrders(data);
-        setLoading(false);
-      })
-      .catch(err => {
-        console.error(err);
-        setLoading(false);
-      });
-  }, []);
+    const fetchOrders = async () => {
+      const token = getToken();
+      if (!token) { router.push("/auth/login"); return; }
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'CREATED': return 'secondary';
-      case 'IN_PROGRESS': return 'default';
-      case 'COMPLETED': return 'success';
-      case 'CANCELLED': return 'destructive';
-      default: return 'outline';
-    }
-  };
+      try {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/orders/my`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        if (res.ok) {
+          setOrders(await res.json());
+        }
+      } catch (e) {
+        console.error(e);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchOrders();
+  }, [router]);
 
   if (loading) {
     return (
@@ -73,51 +60,64 @@ export default function ClientOrdersPage() {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-3xl font-bold text-white tracking-tight">Meus Pedidos</h1>
-        <p className="text-slate-400 mt-1">Acompanhe o status das suas impressões 3D.</p>
+        <div className="technical-label mb-2">Pipeline Ativo</div>
+        <h1 className="text-3xl md:text-4xl font-outfit font-bold text-white tracking-tighter uppercase">
+          Meus <span className="gradient-text-pro">Pedidos</span>
+        </h1>
+        <p className="text-slate-400 mt-2 font-mono text-sm">Acompanhamento dos serviços de impressão contratados.</p>
       </div>
 
       {orders.length === 0 ? (
-        <div className="pro-card p-12 text-center space-y-4 bg-slate-900/40 border border-slate-800">
-          <div className="w-16 h-16 rounded bg-slate-800 flex items-center justify-center text-slate-400 mx-auto">
-            <Box className="w-8 h-8" />
+        <div className="pro-card p-12 text-center space-y-6 max-w-xl mx-auto mt-8 bg-slate-900/40 border-slate-800 border-dashed">
+          <div className="w-16 h-16 rounded-none bg-primary/10 flex items-center justify-center text-primary border border-primary/20 mx-auto">
+            <ShoppingBag className="w-8 h-8" />
           </div>
           <div className="space-y-2">
-            <h2 className="text-xl font-bold text-white">Nenhum pedido encontrado</h2>
-            <p className="text-slate-400">Você ainda não tem pedidos ativos.</p>
+            <h2 className="text-lg font-bold font-mono text-white uppercase tracking-tight">Nenhum Pedido Ativo</h2>
+            <p className="text-slate-400 max-w-sm mx-auto font-mono text-sm leading-relaxed">
+              Aceite um orçamento de uma solicitação para iniciar um pedido.
+            </p>
           </div>
+          <Link href="/dashboard/client" className="inline-flex items-center gap-2 font-mono text-xs text-primary hover:text-white transition-colors uppercase tracking-widest">
+            Ver minhas solicitações →
+          </Link>
         </div>
       ) : (
-        <div className="grid gap-4">
+        <div className="space-y-4">
           {orders.map((order) => (
-            <div key={order.id} className="pro-card p-6 bg-slate-900/20 border border-slate-800 hover:border-slate-700 transition-all group">
-              <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+            <div key={order.id} className="pro-card p-6 bg-slate-900/20 border-slate-800 hover:border-primary/50 transition-all group">
+              <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div className="flex items-start gap-4">
-                  <div className="w-12 h-12 rounded bg-primary/10 flex items-center justify-center text-primary shrink-0">
-                    <Box className="w-6 h-6" />
+                  <div className="w-12 h-12 rounded-none bg-primary/10 border border-primary/20 flex items-center justify-center text-primary shrink-0">
+                    <Package className="w-6 h-6" />
                   </div>
                   <div className="space-y-1">
-                    <h3 className="text-lg font-bold text-white group-hover:text-primary transition-colors flex items-center gap-2">
-                      {order.request.title}
-                      <ExternalLink className="w-3 h-3 opacity-0 group-hover:opacity-50" />
+                    <h3 className="text-lg font-bold text-white uppercase tracking-tight group-hover:text-primary transition-colors">
+                      {order.request?.title}
                     </h3>
-                    <div className="flex items-center gap-3 text-sm text-slate-400">
-                      <span>Hub: <span className="text-slate-200">{order.proposal.provider.user.name}</span></span>
-                      <span>•</span>
-                      <span>Preço: <span className="text-slate-200">R$ {order.proposal.price.toFixed(2)}</span></span>
+                    <div className="flex flex-wrap gap-x-4 gap-y-1">
+                      <p className="text-sm font-mono text-slate-400">
+                        Hub: <span className="text-slate-300">{order.proposal?.provider?.user?.name || "Parceiro"}</span>
+                      </p>
+                      <p className="text-sm font-mono text-slate-400">
+                        Valor: <span className="text-primary font-bold">{new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(order.proposal?.price || 0)}</span>
+                      </p>
+                      <p className="text-sm font-mono text-slate-400">
+                        Prazo: <span className="text-slate-300">{order.proposal?.deliveryDays} dias</span>
+                      </p>
                     </div>
                   </div>
                 </div>
-
-                <div className="flex items-center justify-between md:justify-end gap-6 w-full md:w-auto">
+                <div className="flex items-center gap-4 self-end md:self-auto">
                   <div className="text-right hidden md:block">
-                    <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">Data</p>
-                    <p className="text-sm font-medium text-slate-300">{new Date(order.createdAt).toLocaleDateString()}</p>
+                    <p className="text-[10px] font-mono text-slate-500 uppercase tracking-widest">Criado</p>
+                    <p className="text-xs font-mono text-slate-400">
+                      {formatDistanceToNow(new Date(order.createdAt), { addSuffix: true, locale: ptBR })}
+                    </p>
                   </div>
-                  <Badge variant={getStatusColor(order.status) as any} className="h-7 px-3">
-                    {order.status}
+                  <Badge variant={ORDER_STATUS_VARIANT[order.status] as any} className="rounded-none font-mono text-xs uppercase tracking-wider px-3 h-7">
+                    {ORDER_STATUS_LABEL[order.status] || order.status}
                   </Badge>
-                  <ChevronRight className="w-5 h-5 text-slate-600 group-hover:text-slate-400 transition-colors" />
                 </div>
               </div>
             </div>

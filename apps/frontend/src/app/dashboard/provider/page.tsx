@@ -26,8 +26,8 @@ export default function ProviderDashboardPage() {
           return;
         }
 
-        // We assume the backend allows querying status via Query string
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/requests?status=OPEN`, {
+        // The backend `GET /requests` endpoint already filters by OPEN
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/requests`, {
           headers: {
             "Authorization": `Bearer ${token}`
           }
@@ -109,10 +109,10 @@ export default function ProviderDashboardPage() {
                       <ImageIcon className="w-3.5 h-3.5" />
                       {req.attachments?.length || 0}
                     </span>
-                    <span>Propostas: {req.proposals?.length || 0}</span>
+                    <span>Propostas: {req._count?.proposals || 0}</span>
                   </div>
                   <Link 
-                    href={`/dashboard/provider/requests/${req.id}`}
+                    href={`/dashboard/provider/leads/${req.id}`}
                     className="font-mono text-xs font-bold uppercase tracking-widest text-primary hover:text-white transition-colors flex items-center gap-2"
                   >
                     Ver Projeto <span className="group-hover:translate-x-1 transition-transform">→</span>
