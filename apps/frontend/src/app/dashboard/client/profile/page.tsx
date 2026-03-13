@@ -19,11 +19,25 @@ export default function ProfilePage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Real test user ID from database
-    const userId = "de396c29-8ae9-48ec-80e6-78a97c817dbd"; 
+    const token = localStorage.getItem("access_token");
+    if (!token) {
+      window.location.href = "/auth/login";
+      return;
+    }
     
-    fetch(`http://localhost:3001/users/${userId}`)
-      .then(res => res.json())
+    // In a real app we would decode JWT or get from /users/me
+    const storedUser = localStorage.getItem("user");
+    const userId = storedUser ? JSON.parse(storedUser).id : null;
+
+    if (!userId) return;
+
+    fetch(`${process.env.NEXT_PUBLIC_API_URL}/users/${userId}`, {
+      headers: { "Authorization": `Bearer ${token}` }
+    })
+      .then(res => {
+        if (!res.ok) throw new Error("Não autorizado");
+        return res.json();
+      })
       .then(data => {
         setUser(data);
         setLoading(false);

@@ -15,6 +15,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.ConversationsController = void 0;
 const common_1 = require("@nestjs/common");
 const conversations_service_1 = require("./conversations.service");
+const jwt_auth_guard_1 = require("../auth/jwt-auth.guard");
 let ConversationsController = class ConversationsController {
     conversationsService;
     constructor(conversationsService) {
@@ -23,8 +24,8 @@ let ConversationsController = class ConversationsController {
     async findOrCreate(data) {
         return this.conversationsService.findOrCreate(data.userIds);
     }
-    async findByUser(userId) {
-        return this.conversationsService.findByUser(userId);
+    async findByUser(req) {
+        return this.conversationsService.findByUser(req.user.id);
     }
 };
 exports.ConversationsController = ConversationsController;
@@ -37,13 +38,14 @@ __decorate([
 ], ConversationsController.prototype, "findOrCreate", null);
 __decorate([
     (0, common_1.Get)(),
-    __param(0, (0, common_1.Query)('userId')),
+    __param(0, (0, common_1.Request)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String]),
+    __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", Promise)
 ], ConversationsController.prototype, "findByUser", null);
 exports.ConversationsController = ConversationsController = __decorate([
     (0, common_1.Controller)('conversations'),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
     __metadata("design:paramtypes", [conversations_service_1.ConversationsService])
 ], ConversationsController);
 //# sourceMappingURL=conversations.controller.js.map

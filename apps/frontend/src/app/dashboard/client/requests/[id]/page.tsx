@@ -41,8 +41,19 @@ export default function RequestDetailPage({ params }: { params: Promise<{ id: st
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch(`http://localhost:3001/requests/${id}`)
-      .then(res => res.json())
+    const token = localStorage.getItem("access_token");
+    if (!token) {
+      window.location.href = "/auth/login";
+      return;
+    }
+
+    fetch(`${process.env.NEXT_PUBLIC_API_URL}/requests/${id}`, {
+      headers: { "Authorization": `Bearer ${token}` }
+    })
+      .then(res => {
+        if (!res.ok) throw new Error("Não autorizado");
+        return res.json();
+      })
       .then(data => {
         setRequest(data);
         setLoading(false);

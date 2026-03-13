@@ -13,7 +13,7 @@ export declare class OrdersController {
         createdAt: Date;
         updatedAt: Date;
     }>;
-    findAll(clientId?: string, providerId?: string): Promise<({
+    findAll(req: any): Promise<({
         request: {
             id: string;
             title: string;

@@ -1,7 +1,9 @@
-import { Controller, Get, Post, Body, Param, Patch, Query } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Patch, Query, UseGuards, Request } from '@nestjs/common';
 import { OrdersService } from './orders.service';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 
 @Controller('orders')
+@UseGuards(JwtAuthGuard)
 export class OrdersController {
   constructor(private readonly ordersService: OrdersService) {}
 
@@ -11,9 +13,12 @@ export class OrdersController {
   }
 
   @Get()
-  async findAll(@Query('clientId') clientId?: string, @Query('providerId') providerId?: string) {
-    if (clientId) return this.ordersService.findByClient(clientId);
-    if (providerId) return this.ordersService.findByProvider(providerId);
+  async findAll(@Request() req) {
+    if (req.user.role === 'CLIENT') {
+      return this.ordersService.findByClient(req.user.id);
+    } else if (req.user.role === 'PROVIDER') {
+      return this.ordersService.findByProvider(req.user.id);
+    }
     return this.ordersService.findAll();
   }
 

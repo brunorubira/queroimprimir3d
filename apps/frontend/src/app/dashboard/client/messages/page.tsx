@@ -16,11 +16,19 @@ export default function ClientMessagesPage() {
   const [activeTab, setActiveTab] = useState<string | null>(null);
 
   useEffect(() => {
-    // Real test user ID from database
-    const userId = "de396c29-8ae9-48ec-80e6-78a97c817dbd"; 
+    const token = localStorage.getItem("access_token");
+    if (!token) {
+      window.location.href = "/auth/login";
+      return;
+    }
     
-    fetch(`http://localhost:3001/conversations?userId=${userId}`)
-      .then(res => res.json())
+    fetch(`${process.env.NEXT_PUBLIC_API_URL}/conversations`, {
+      headers: { "Authorization": `Bearer ${token}` }
+    })
+      .then(res => {
+        if (!res.ok) throw new Error("Não autorizado");
+        return res.json();
+      })
       .then(data => {
         setConversations(data);
         if (data.length > 0) setActiveTab(data[0].id);

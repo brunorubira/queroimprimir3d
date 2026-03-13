@@ -23,13 +23,18 @@ export default function NewRequestPage() {
 
   const onSubmit = async (data: any) => {
     try {
-      // Real test user ID from database
-      const clientId = "de396c29-8ae9-48ec-80e6-78a97c817dbd"; 
+      const token = localStorage.getItem("access_token");
+      if (!token) {
+        throw new Error("Não autenticado");
+      }
       
-      const response = await fetch("http://localhost:3001/requests", {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/requests`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...data, clientId }),
+        headers: { 
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}` 
+        },
+        body: JSON.stringify(data),
       });
 
       if (response.ok) {

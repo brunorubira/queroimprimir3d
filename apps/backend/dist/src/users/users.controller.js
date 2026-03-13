@@ -15,12 +15,16 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.UsersController = void 0;
 const common_1 = require("@nestjs/common");
 const users_service_1 = require("./users.service");
+const jwt_auth_guard_1 = require("../auth/jwt-auth.guard");
 let UsersController = class UsersController {
     usersService;
     constructor(usersService) {
         this.usersService = usersService;
     }
-    async findById(id) {
+    async findById(id, req) {
+        if (req.user.id !== id && req.user.role !== 'ADMIN') {
+            throw new common_1.ForbiddenException('Acesso negado');
+        }
         const user = await this.usersService.findById(id);
         if (!user) {
             throw new common_1.NotFoundException('Usuário não encontrado');
@@ -33,12 +37,14 @@ exports.UsersController = UsersController;
 __decorate([
     (0, common_1.Get)(':id'),
     __param(0, (0, common_1.Param)('id')),
+    __param(1, (0, common_1.Request)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String]),
+    __metadata("design:paramtypes", [String, Object]),
     __metadata("design:returntype", Promise)
 ], UsersController.prototype, "findById", null);
 exports.UsersController = UsersController = __decorate([
     (0, common_1.Controller)('users'),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
     __metadata("design:paramtypes", [users_service_1.UsersService])
 ], UsersController);
 //# sourceMappingURL=users.controller.js.map

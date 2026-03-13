@@ -28,11 +28,19 @@ export default function ClientOrdersPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Real test user ID from database
-    const clientId = "de396c29-8ae9-48ec-80e6-78a97c817dbd"; 
+    const token = localStorage.getItem("access_token");
+    if (!token) {
+      window.location.href = "/auth/login";
+      return;
+    }
     
-    fetch(`http://localhost:3001/orders?clientId=${clientId}`)
-      .then(res => res.json())
+    fetch(`${process.env.NEXT_PUBLIC_API_URL}/orders`, {
+      headers: { "Authorization": `Bearer ${token}` }
+    })
+      .then(res => {
+        if (!res.ok) throw new Error("Não autorizado");
+        return res.json();
+      })
       .then(data => {
         setOrders(data);
         setLoading(false);
