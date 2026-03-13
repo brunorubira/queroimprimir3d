@@ -1,4 +1,4 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { Injectable, UnauthorizedException, BadRequestException } from '@nestjs/common';
 import { UsersService } from '../users/users.service';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
@@ -14,12 +14,19 @@ export class AuthService {
     const saltRounds = 10;
     const hashedPassword = await bcrypt.hash(pass, saltRounds);
 
-    return this.usersService.create({
-      email,
-      password: hashedPassword,
-      name,
-      ...(role && { role }),
-    });
+    try {
+      return await this.usersService.create({
+        email,
+        password: hashedPassword,
+        name,
+        ...(role && { role }),
+      });
+    } catch (error: any) {
+      if (error.code === 'P2002') {
+        throw new BadRequestException('Este e-mail já está em uso');
+      }
+      throw error;
+    }
   }
 
   async login(email: string, pass: string) {
