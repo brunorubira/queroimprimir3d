@@ -6,6 +6,7 @@ import * as zod from "zod";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import React from "react";
 
 const registerSchema = zod.object({
   name: zod.string().min(2, "Nome muito curto"),
@@ -21,9 +22,45 @@ export function RegisterForm() {
     defaultValues: { role: "CLIENT" }
   });
 
-  const onSubmit = (data: any) => {
-    console.log(data);
-    router.push(data.role === "PROVIDER" ? "/dashboard/provider" : "/dashboard/client");
+  const [isLoading, setIsLoading] = React.useState(false);
+  const [errorMsg, setErrorMsg] = React.useState("");
+
+  const onSubmit = async (data: any) => {
+    setIsLoading(true);
+    setErrorMsg("");
+    try {
+      const res = await fetch("http://localhost:3001/auth/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        // Ensure role is handled by backend if the endpoint supports it (here we keep the demo simple)
+        body: JSON.stringify({ email: data.email, password: data.password, name: data.name, role: data.role }),
+      });
+
+      if (!res.ok) {
+        throw new Error("Erro ao criar cadastro");
+      }
+
+      // Automatically login after registration
+      const loginRes = await fetch("http://localhost:3001/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: data.email, password: data.password }),
+      });
+
+      if (loginRes.ok) {
+        const responseData = await loginRes.json();
+        localStorage.setItem("access_token", responseData.access_token);
+        localStorage.setItem("user", JSON.stringify(responseData.user));
+        router.push(data.role === "PROVIDER" ? "/dashboard/provider" : "/dashboard/client");
+      } else {
+         router.push("/auth/login");
+      }
+
+    } catch (err: any) {
+       setErrorMsg(err.message || "Erro desconhecido");
+    } finally {
+       setIsLoading(false);
+    }
   };
 
   return (
@@ -33,6 +70,7 @@ export function RegisterForm() {
       <div className="text-center">
         <h2 className="text-3xl font-bold tracking-tight text-white">Criar sua conta</h2>
         <p className="text-slate-400 mt-2 text-sm">Junte-se à maior rede de impressão 3D</p>
+        {errorMsg && <p className="text-red-500 text-sm mt-4">{errorMsg}</p>}
       </div>
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
@@ -78,8 +116,8 @@ export function RegisterForm() {
           </select>
         </div>
 
-        <Button type="submit" className="w-full h-11 text-sm font-bold pt-1">
-          Criar Cadastro
+        <Button type="submit" className="w-full h-11 text-sm font-bold pt-1" disabled={isLoading}>
+          {isLoading ? "Criando Conta..." : "Criar Cadastro"}
         </Button>
       </form>
 

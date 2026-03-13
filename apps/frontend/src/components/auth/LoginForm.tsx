@@ -6,6 +6,7 @@ import * as zod from "zod";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import React from "react";
 
 const loginSchema = zod.object({
   email: zod.string().email("E-mail inválido"),
@@ -18,14 +19,36 @@ export function LoginForm() {
     resolver: zodResolver(loginSchema),
   });
 
-  const onSubmit = (data: any) => {
-    console.log(data);
-    if (data.email.includes("admin")) {
-      router.push("/dashboard/admin");
-    } else if (data.email.includes("maker")) {
-      router.push("/dashboard/provider");
-    } else {
-      router.push("/dashboard/client");
+  const [isLoading, setIsLoading] = React.useState(false);
+  const [errorMsg, setErrorMsg] = React.useState("");
+
+  const onSubmit = async (data: any) => {
+    setIsLoading(true);
+    setErrorMsg("");
+    try {
+      const res = await fetch("http://localhost:3001/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
+
+      if (!res.ok) {
+        throw new Error("Credenciais inválidas");
+      }
+
+      const responseData = await res.json();
+      localStorage.setItem("access_token", responseData.access_token);
+      localStorage.setItem("user", JSON.stringify(responseData.user));
+
+      if (responseData.user.role === "PROVIDER") {
+        router.push("/dashboard/provider");
+      } else {
+        router.push("/dashboard/client");
+      }
+    } catch (err: any) {
+      setErrorMsg(err.message || "Erro ao fazer login");
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -36,6 +59,7 @@ export function LoginForm() {
       <div className="text-center">
         <h2 className="text-3xl font-bold tracking-tight text-white">Bem-vindo de volta</h2>
         <p className="text-slate-400 mt-2 text-sm">Acesse sua conta QueroImprimir3D</p>
+        {errorMsg && <p className="text-red-500 text-sm mt-4">{errorMsg}</p>}
       </div>
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
@@ -60,8 +84,8 @@ export function LoginForm() {
           {errors.password && <p className="text-xs text-red-500 font-medium ml-1">{errors.password.message as string}</p>}
         </div>
 
-        <Button type="submit" className="w-full h-11 text-sm font-bold">
-          Entrar na Conta
+        <Button type="submit" className="w-full h-11 text-sm font-bold" disabled={isLoading}>
+          {isLoading ? "Entrando..." : "Entrar na Conta"}
         </Button>
       </form>
 
