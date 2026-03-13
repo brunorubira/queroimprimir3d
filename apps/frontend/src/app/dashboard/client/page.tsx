@@ -81,7 +81,7 @@ export default function ClientDashboardPage() {
           </h1>
           <p className="text-slate-400 mt-2 font-mono text-sm">Painel de controle para solicitações de manufatura 3D.</p>
         </div>
-        <Link href="/dashboard/client/requests/new">
+        <Link href="/dashboard/client/new-request">
           <Button className="flex items-center gap-2 rounded-none font-mono uppercase tracking-widest bg-primary text-primary-foreground hover:bg-primary/90">
             <PlusCircle className="w-4 h-4" />
             Nova Solicitação
