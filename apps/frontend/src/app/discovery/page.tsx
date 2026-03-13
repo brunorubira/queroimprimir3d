@@ -5,55 +5,22 @@ import { Button } from "@/components/ui/button";
 import { MapPin, Printer, Star, Box, ChevronRight, Filter } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
-// Mock data for MVP
-const MOCK_HUBS = [
-  {
-    id: "hub-1",
-    name: "TechPrint São Paulo",
-    rating: 4.9,
-    reviews: 124,
-    location: "São Paulo, SP",
-    technologies: ["FDM", "SLA"],
-    materials: ["PLA", "ABS", "PETG", "Resina Standard"],
-    priceLevel: "$$",
-    status: "ONLINE",
-  },
-  {
-    id: "hub-2",
-    name: "Mecânica Maker",
-    rating: 5.0,
-    reviews: 89,
-    location: "Curitiba, PR",
-    technologies: ["FDM", "SLS"],
-    materials: ["PLA", "Nylon", "TPU"],
-    priceLevel: "$$$",
-    status: "ONLINE",
-  },
-  {
-    id: "hub-3",
-    name: "ResinArt Studios",
-    rating: 4.7,
-    reviews: 42,
-    location: "Rio de Janeiro, RJ",
-    technologies: ["SLA", "DLP"],
-    materials: ["Resina ABS-Like", "Resina Transparente", "Resina Odonto"],
-    priceLevel: "$$$",
-    status: "OCUPADO",
-  },
-  {
-    id: "hub-4",
-    name: "FastPrint BR",
-    rating: 4.8,
-    reviews: 210,
-    location: "Belo Horizonte, MG",
-    technologies: ["FDM"],
-    materials: ["PLA", "ABS", "PETG"],
-    priceLevel: "$",
-    status: "ONLINE",
+async function getProviders() {
+  try {
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/providers`, {
+      cache: 'no-store'
+    });
+    if (!res.ok) return [];
+    return res.json();
+  } catch (error) {
+    console.error("Error fetching providers:", error);
+    return [];
   }
-];
+}
 
-export default function DiscoveryPage() {
+export default async function DiscoveryPage() {
+  const hubs = await getProviders();
+
   return (
     <div className="flex flex-col min-h-screen bg-slate-950 font-sans selection:bg-primary/30">
       <Navbar />
@@ -122,7 +89,7 @@ export default function DiscoveryPage() {
             <div className="flex-1 space-y-6">
               <div className="flex items-center justify-between">
                 <span className="text-[10px] font-mono font-bold uppercase tracking-widest text-slate-500">
-                  Mostrando {MOCK_HUBS.length} nós disponíveis
+                  Mostrando {hubs.length} nós disponíveis
                 </span>
                 
                 <select className="bg-slate-900 border border-slate-800 rounded-none px-3 py-1.5 text-xs font-mono text-slate-400 outline-none focus:border-primary">
@@ -133,9 +100,17 @@ export default function DiscoveryPage() {
               </div>
 
               <div className="grid gap-4">
-                {MOCK_HUBS.map((hub) => (
-                  <HubCard key={hub.id} hub={hub} />
-                ))}
+                {hubs.length === 0 ? (
+                  <div className="pro-card p-12 text-center bg-slate-900/20 border-slate-800">
+                     <p className="text-slate-500 font-mono text-xs uppercase tracking-widest">
+                       Nenhum nó de manufatura encontrado no momento.
+                     </p>
+                  </div>
+                ) : (
+                  hubs.map((hub: any) => (
+                    <HubCard key={hub.id} hub={hub} />
+                  ))
+                )}
               </div>
             </div>
           </div>
@@ -146,6 +121,12 @@ export default function DiscoveryPage() {
 }
 
 function HubCard({ hub }: { hub: any }) {
+  const technologies = hub.printers ? Array.from(new Set(hub.printers.map((p: any) => p.technology))) : ["FDM", "SLA"];
+  const isOnline = hub.user?.name ? "ONLINE" : "OCUPADO";
+  const hubName = hub.user?.name || "Hub QueroImprimir3D";
+  const rating = hub.rating || 5.0;
+  const location = "Acesso Global";
+
   return (
     <div className="pro-card p-6 bg-slate-900/20 border-slate-800 hover:border-primary/50 transition-all group relative overflow-hidden">
       <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-primary/5 to-transparent pointer-events-none" />
@@ -156,8 +137,8 @@ function HubCard({ hub }: { hub: any }) {
           <div className="w-16 h-16 rounded-none bg-primary/10 border border-primary/20 flex items-center justify-center text-primary mb-3">
             <Printer className="w-8 h-8" />
           </div>
-          <Badge variant={hub.status === "ONLINE" ? "default" : "secondary"} className="rounded-none font-mono text-[9px] uppercase tracking-widest px-2">
-            {hub.status}
+          <Badge variant={isOnline === "ONLINE" ? "default" : "secondary"} className="rounded-none font-mono text-[9px] uppercase tracking-widest px-2">
+            {isOnline}
           </Badge>
         </div>
 
@@ -166,37 +147,36 @@ function HubCard({ hub }: { hub: any }) {
           <div>
             <div className="flex items-start justify-between mb-2">
               <h3 className="text-xl font-bold text-white uppercase tracking-tight group-hover:text-primary transition-colors">
-                {hub.name}
+                {hubName}
               </h3>
               <div className="flex items-center gap-1 bg-slate-950 px-2 py-1 border border-slate-800">
                 <Star className="w-3 h-3 text-yellow-500 fill-yellow-500" />
-                <span className="text-xs font-mono font-bold text-white">{hub.rating}</span>
-                <span className="text-[9px] font-mono text-slate-500">({hub.reviews})</span>
+                <span className="text-xs font-mono font-bold text-white">{rating}</span>
+                <span className="text-[9px] font-mono text-slate-500">(Novo)</span>
               </div>
             </div>
 
             <div className="flex items-center gap-2 text-slate-400 mb-4">
               <MapPin className="w-3 h-3" />
-              <span className="text-xs font-mono uppercase tracking-widest">{hub.location}</span>
+              <span className="text-xs font-mono uppercase tracking-widest">{location}</span>
             </div>
           </div>
 
           <div className="flex flex-wrap gap-2">
-            {hub.technologies.map((tech: string) => (
+            {technologies.map((tech: any) => (
               <span key={tech} className="text-[10px] font-mono font-bold text-primary bg-primary/10 border border-primary/20 px-2 py-0.5 rounded-none uppercase tracking-widest">
                 {tech}
               </span>
             ))}
-            {hub.materials.slice(0, 3).map((mat: string) => (
-              <span key={mat} className="text-[10px] font-mono text-slate-400 bg-slate-950 border border-slate-800 px-2 py-0.5 rounded-none uppercase tracking-widest">
-                {mat}
-              </span>
-            ))}
-            {hub.materials.length > 3 && (
-              <span className="text-[10px] font-mono text-slate-500 px-1 py-0.5">
-                +{hub.materials.length - 3}
-              </span>
-            )}
+            <span className="text-[10px] font-mono text-slate-400 bg-slate-950 border border-slate-800 px-2 py-0.5 rounded-none uppercase tracking-widest">
+              Nylon
+            </span>
+            <span className="text-[10px] font-mono text-slate-400 bg-slate-950 border border-slate-800 px-2 py-0.5 rounded-none uppercase tracking-widest">
+              PLA
+            </span>
+            <span className="text-[10px] font-mono text-slate-400 bg-slate-950 border border-slate-800 px-2 py-0.5 rounded-none uppercase tracking-widest">
+              ABS
+            </span>
           </div>
         </div>
 
@@ -204,10 +184,10 @@ function HubCard({ hub }: { hub: any }) {
         <div className="flex flex-col justify-between items-end border-l border-slate-800/50 pl-6 md:w-48 shrink-0">
           <div className="text-right">
             <span className="text-[9px] font-mono font-bold uppercase tracking-widest text-slate-500 block mb-1">Custo Base</span>
-            <span className="text-sm font-mono font-bold text-white">{hub.priceLevel}</span>
+            <span className="text-sm font-mono font-bold text-white">Sob Orçamento</span>
           </div>
 
-          <Link href="/dashboard/client/requests/new" className="w-full mt-4">
+          <Link href="/auth/login" className="w-full mt-4">
             <Button className="w-full h-10 rounded-none font-mono text-[10px] font-bold uppercase tracking-widest bg-slate-800 text-white hover:bg-primary transition-all group-hover:bg-primary">
               Solicitar <ChevronRight className="w-3 h-3 ml-2 group-hover:translate-x-1 transition-transform" />
             </Button>
