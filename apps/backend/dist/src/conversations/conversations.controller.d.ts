@@ -9,6 +9,13 @@ export declare class ConversationsController {
         createdAt: Date;
     }>;
     findByUser(req: any): Promise<({
+        messages: {
+            id: string;
+            content: string;
+            conversationId: string;
+            senderId: string;
+            createdAt: Date;
+        }[];
         participants: ({
             user: {
                 name: string;
@@ -18,13 +25,6 @@ export declare class ConversationsController {
             conversationId: string;
             userId: string;
         })[];
-        messages: {
-            id: string;
-            content: string;
-            conversationId: string;
-            senderId: string;
-            createdAt: Date;
-        }[];
     } & {
         id: string;
         createdAt: Date;

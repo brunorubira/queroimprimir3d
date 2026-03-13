@@ -20,16 +20,6 @@ export declare class RequestsController {
         updatedAt: Date;
     }>;
     findAll(req: any): Promise<({
-        client: {
-            name: string;
-        };
-        attachments: {
-            id: string;
-            url: string;
-            filename: string;
-            mimetype: string;
-            requestId: string;
-        }[];
         proposals: {
             id: string;
             price: number;
@@ -41,16 +31,6 @@ export declare class RequestsController {
             createdAt: Date;
             updatedAt: Date;
         }[];
-    } & {
-        id: string;
-        title: string;
-        description: string;
-        status: import(".prisma/client").$Enums.RequestStatus;
-        clientId: string;
-        createdAt: Date;
-        updatedAt: Date;
-    })[]>;
-    findOne(id: string): Promise<({
         client: {
             name: string;
         };
@@ -61,6 +41,16 @@ export declare class RequestsController {
             mimetype: string;
             requestId: string;
         }[];
+    } & {
+        id: string;
+        title: string;
+        description: string;
+        status: import(".prisma/client").$Enums.RequestStatus;
+        clientId: string;
+        createdAt: Date;
+        updatedAt: Date;
+    })[]>;
+    findOne(id: string): Promise<({
         proposals: ({
             provider: {
                 user: {
@@ -86,6 +76,16 @@ export declare class RequestsController {
             createdAt: Date;
             updatedAt: Date;
         })[];
+        client: {
+            name: string;
+        };
+        attachments: {
+            id: string;
+            url: string;
+            filename: string;
+            mimetype: string;
+            requestId: string;
+        }[];
     } & {
         id: string;
         title: string;
