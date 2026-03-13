@@ -2,12 +2,14 @@ import { Injectable, UnauthorizedException, BadRequestException } from '@nestjs/
 import { UsersService } from '../users/users.service';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
+import { ProvidersService } from '../providers/providers.service';
 
 @Injectable()
 export class AuthService {
   constructor(
     private usersService: UsersService,
-    private jwtService: JwtService
+    private jwtService: JwtService,
+    private providersService: ProvidersService,
   ) {}
 
   async register(email: string, pass: string, name: string, role?: any) {
@@ -15,12 +17,21 @@ export class AuthService {
     const hashedPassword = await bcrypt.hash(pass, saltRounds);
 
     try {
-      return await this.usersService.create({
+      const user = await this.usersService.create({
         email,
         password: hashedPassword,
         name,
         ...(role && { role }),
       });
+
+      // If registering as a PROVIDER, automatically create their Provider profile
+      if (role === 'PROVIDER') {
+        await this.providersService.create(user.id, {
+          bio: `Hub de Impressão 3D - ${name}`,
+        });
+      }
+
+      return user;
     } catch (error: any) {
       if (error.code === 'P2002') {
         throw new BadRequestException('Este e-mail já está em uso');
