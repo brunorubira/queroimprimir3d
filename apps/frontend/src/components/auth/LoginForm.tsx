@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import React from "react";
+import { setAuth } from "@/lib/auth";
 
 const loginSchema = zod.object({
   email: zod.string().email("E-mail inválido"),
@@ -37,8 +38,7 @@ export function LoginForm() {
       }
 
       const responseData = await res.json();
-      localStorage.setItem("access_token", responseData.access_token);
-      localStorage.setItem("user", JSON.stringify(responseData.user));
+      setAuth(responseData.access_token, responseData.user);
 
       if (responseData.user.role === "PROVIDER") {
         router.push("/dashboard/provider");

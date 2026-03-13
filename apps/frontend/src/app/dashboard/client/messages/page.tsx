@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { MessageSquare, Search, Send, User } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { getToken } from "@/lib/auth";
 
 interface Conversation {
   id: string;
@@ -16,7 +17,7 @@ export default function ClientMessagesPage() {
   const [activeTab, setActiveTab] = useState<string | null>(null);
 
   useEffect(() => {
-    const token = localStorage.getItem("access_token");
+    const token = getToken();
     if (!token) {
       window.location.href = "/auth/login";
       return;

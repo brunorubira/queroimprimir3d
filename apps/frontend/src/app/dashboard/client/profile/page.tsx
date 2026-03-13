@@ -5,6 +5,7 @@ import { User, Mail, Shield, Calendar, MapPin, Camera, Edit2 } from "lucide-reac
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
+import { getToken, getUser } from "@/lib/auth";
 
 interface UserProfile {
   id: string;
@@ -19,15 +20,14 @@ export default function ProfilePage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const token = localStorage.getItem("access_token");
+    const token = getToken();
     if (!token) {
       window.location.href = "/auth/login";
       return;
     }
     
-    // In a real app we would decode JWT or get from /users/me
-    const storedUser = localStorage.getItem("user");
-    const userId = storedUser ? JSON.parse(storedUser).id : null;
+    const storedUser = getUser();
+    const userId = storedUser?.id ?? null;
 
     if (!userId) return;
 

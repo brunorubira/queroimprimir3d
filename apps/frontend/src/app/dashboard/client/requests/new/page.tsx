@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Upload, ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useRouter } from "next/navigation";
+import { getToken } from "@/lib/auth";
 
 
 const requestSchema = zod.object({
@@ -23,7 +24,7 @@ export default function NewRequestPage() {
 
   const onSubmit = async (data: any) => {
     try {
-      const token = localStorage.getItem("access_token");
+      const token = getToken();
       if (!token) {
         throw new Error("Não autenticado");
       }

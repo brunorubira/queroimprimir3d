@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
+import { getToken } from "@/lib/auth";
 
 interface Request {
   id: string;
@@ -21,7 +22,7 @@ export default function ClientDashboardPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const token = localStorage.getItem("access_token");
+    const token = getToken();
     if (!token) {
       window.location.href = "/auth/login";
       return;

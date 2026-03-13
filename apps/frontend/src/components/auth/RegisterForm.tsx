@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import React from "react";
+import { setAuth } from "@/lib/auth";
 
 const registerSchema = zod.object({
   name: zod.string().min(2, "Nome muito curto"),
@@ -49,8 +50,7 @@ export function RegisterForm() {
 
       if (loginRes.ok) {
         const responseData = await loginRes.json();
-        localStorage.setItem("access_token", responseData.access_token);
-        localStorage.setItem("user", JSON.stringify(responseData.user));
+        setAuth(responseData.access_token, responseData.user);
         router.push(data.role === "PROVIDER" ? "/dashboard/provider" : "/dashboard/client");
       } else {
          router.push("/auth/login");

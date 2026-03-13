@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { Box, Clock, CheckCircle2, ChevronRight, ExternalLink } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
+import { getToken } from "@/lib/auth";
 
 interface Order {
   id: string;
@@ -28,7 +29,7 @@ export default function ClientOrdersPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const token = localStorage.getItem("access_token");
+    const token = getToken();
     if (!token) {
       window.location.href = "/auth/login";
       return;
