@@ -54,13 +54,14 @@ let AuthService = class AuthService {
         this.usersService = usersService;
         this.jwtService = jwtService;
     }
-    async register(email, pass, name) {
+    async register(email, pass, name, role) {
         const saltRounds = 10;
         const hashedPassword = await bcrypt.hash(pass, saltRounds);
         return this.usersService.create({
             email,
             password: hashedPassword,
             name,
+            ...(role && { role }),
         });
     }
     async login(email, pass) {
