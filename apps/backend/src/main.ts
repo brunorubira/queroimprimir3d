@@ -6,8 +6,9 @@ async function bootstrap() {
   app.enableCors({
     origin: [
       'http://localhost:3000',
-      process.env.FRONTEND_URL || '*', // Add specific Vercel URL in production ENV
-    ],
+      'https://queroimprimir3d.vercel.app',
+      process.env.FRONTEND_URL,
+    ].filter(Boolean) as string[],
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     credentials: true,
   });
