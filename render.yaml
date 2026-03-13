@@ -3,7 +3,7 @@ services:
     name: queroimprimir3d-api
     env: node
     rootDir: apps/backend
-    buildCommand: npm install --include=dev && npm run build
+    buildCommand: rm -rf node_modules && npm install --include=dev && npm run build
     startCommand: node dist/main
     envVars:
       - key: DATABASE_URL
