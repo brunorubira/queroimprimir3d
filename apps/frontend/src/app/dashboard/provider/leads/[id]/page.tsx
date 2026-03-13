@@ -1,10 +1,16 @@
 import { SubmitProposalForm } from "@/components/proposals/SubmitProposalForm";
 import { Badge } from "@/components/ui/badge";
-import { FileText, MapPin, Printer } from "lucide-react";
+import { FileText, MapPin, Printer, ArrowLeft } from "lucide-react";
+import Link from "next/link";
 
 export default function LeadDetailsPage() {
   return (
     <div className="max-w-4xl mx-auto space-y-8 pb-20">
+      <Link href="/dashboard/provider" className="inline-flex items-center gap-2 text-slate-400 hover:text-white transition-colors mb-2 group">
+        <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
+        <span className="text-sm font-semibold uppercase tracking-widest font-mono text-[10px]">Voltar ao Marketplace</span>
+      </Link>
+
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold gradient-text">Detalhes do Lead</h1>

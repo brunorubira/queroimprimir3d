@@ -4,6 +4,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as zod from "zod";
 import { Button } from "@/components/ui/button";
+import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import React from "react";
@@ -54,9 +55,14 @@ export function LoginForm() {
 
   return (
     <div className="min-h-[80vh] pro-flex-center px-4">
-      <div className="w-full max-w-md p-8 pro-card bg-slate-900/50 space-y-8">
+      <div className="w-full max-w-md p-8 pro-card bg-slate-900/50 space-y-8 relative">
+      
+      <Link href="/" className="absolute left-6 top-6 text-slate-400 hover:text-white transition-colors flex items-center gap-2 group">
+        <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
+        <span className="text-xs font-semibold sr-only">Voltar</span>
+      </Link>
 
-      <div className="text-center">
+      <div className="text-center pt-2">
         <h2 className="text-3xl font-bold tracking-tight text-white">Bem-vindo de volta</h2>
         <p className="text-slate-400 mt-2 text-sm">Acesse sua conta QueroImprimir3D</p>
         {errorMsg && <p className="text-red-500 text-sm mt-4">{errorMsg}</p>}

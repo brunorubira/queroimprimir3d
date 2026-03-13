@@ -1,9 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import { clearAuth } from "@/lib/auth";
 import { cn } from "@/lib/utils";
-import { Box, LayoutDashboard, MessageSquare, PlusCircle, Settings, User } from "lucide-react";
+import { Box, LayoutDashboard, MessageSquare, PlusCircle, Settings, User, LogOut } from "lucide-react";
 
 const navItems = [
   { label: "Dashboard", href: "/dashboard/client", icon: LayoutDashboard },
@@ -14,6 +15,12 @@ const navItems = [
 
 export function ClientSidebar() {
   const pathname = usePathname();
+  const router = useRouter();
+
+  const handleLogout = () => {
+    clearAuth();
+    router.push("/auth/login");
+  };
 
   return (
     <div className="w-64 border-r border-slate-800 bg-slate-950 flex flex-col h-screen fixed left-0 top-0 z-40">
@@ -65,6 +72,13 @@ export function ClientSidebar() {
           <Settings className="w-4 h-4" />
           Configurações
         </Link>
+        <button
+          onClick={handleLogout}
+          className="w-full flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium text-red-500 hover:bg-red-500/10 transition-colors mt-4"
+        >
+          <LogOut className="w-4 h-4" />
+          Sair
+        </button>
       </div>
     </div>
   );

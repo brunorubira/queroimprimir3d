@@ -7,8 +7,9 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as zod from "zod";
 import { Button } from "@/components/ui/button";
-import { Upload, ChevronDown } from "lucide-react";
+import { Upload, ChevronDown, ArrowLeft } from "lucide-react";
 import { cn } from "@/lib/utils";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { getToken } from "@/lib/auth";
 import { uploadReferenceImage } from "@/lib/supabase";
@@ -81,6 +82,10 @@ export default function NewRequestPage() {
   return (
     <div className="max-w-3xl mx-auto space-y-8">
       <div>
+        <Link href="/dashboard/client" className="inline-flex items-center gap-2 text-slate-400 hover:text-white transition-colors mb-6 group">
+          <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
+          <span className="text-sm font-semibold uppercase tracking-widest font-mono text-[10px]">Voltar para o Painel</span>
+        </Link>
         <div className="technical-label mb-2">
           Protocolo: Criação de Solicitação
         </div>

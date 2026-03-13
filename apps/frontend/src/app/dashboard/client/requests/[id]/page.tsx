@@ -2,7 +2,7 @@
 "use client";
 
 import { useEffect, useState, use } from "react";
-import { Box, Clock, LayoutGrid, CheckCircle2, ChevronLeft, MessageSquare, User, FileText, Printer } from "lucide-react";
+import { Box, Clock, LayoutGrid, CheckCircle2, ChevronLeft, MessageSquare, User, FileText, Printer, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
@@ -125,12 +125,10 @@ export default function RequestDetailPage({ params }: { params: Promise<{ id: st
 
   return (
     <div className="space-y-8">
-      <div className="flex items-center gap-4">
-        <Link href="/dashboard/client">
-          <Button variant="ghost" size="sm" className="text-slate-400 hover:text-white -ml-2">
-            <ChevronLeft className="w-4 h-4 mr-1" />
-            Voltar
-          </Button>
+      <div>
+        <Link href="/dashboard/client" className="inline-flex items-center gap-2 text-slate-400 hover:text-white transition-colors mb-2 group">
+          <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
+          <span className="text-sm font-semibold uppercase tracking-widest font-mono text-[10px]">Voltar para o Painel</span>
         </Link>
       </div>
 
