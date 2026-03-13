@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Param, Query, UseGuards, Request } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, UseGuards, Request } from '@nestjs/common';
 import { ConversationsService } from './conversations.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 
@@ -14,7 +14,11 @@ export class ConversationsController {
 
   @Get()
   async findByUser(@Request() req) {
-    // Only fetch conversations for the authenticated user
     return this.conversationsService.findByUser(req.user.id);
+  }
+
+  @Get(':id')
+  async findById(@Param('id') id: string) {
+    return this.conversationsService.findById(id);
   }
 }

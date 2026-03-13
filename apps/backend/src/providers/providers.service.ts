@@ -35,6 +35,49 @@ export class ProvidersService {
     });
   }
 
+  async findByUserId(userId: string) {
+    return this.prisma.provider.findUnique({
+      where: { userId },
+      include: {
+        user: { select: { name: true, email: true } },
+        printers: true,
+        services: true,
+      },
+    });
+  }
+
+  async updateByUserId(userId: string, data: { bio?: string; location?: string }) {
+    const provider = await this.prisma.provider.findUnique({ where: { userId } });
+    if (!provider) {
+      // Auto-create if doesn't exist yet
+      return this.prisma.provider.create({
+        data: { userId, ...data },
+        include: { user: { select: { name: true } }, printers: true },
+      });
+    }
+    return this.prisma.provider.update({
+      where: { userId },
+      data,
+      include: { user: { select: { name: true } }, printers: true },
+    });
+  }
+
+  async addPrinter(userId: string, data: { model: string; technology: string; buildVolume?: string }) {
+    const provider = await this.prisma.provider.findUnique({ where: { userId } });
+    if (!provider) throw new Error('Provider profile not found');
+    return this.prisma.printer.create({
+      data: { ...data, providerId: provider.id },
+    });
+  }
+
+  async removePrinter(userId: string, printerId: string) {
+    const provider = await this.prisma.provider.findUnique({ where: { userId } });
+    if (!provider) throw new Error('Provider profile not found');
+    return this.prisma.printer.deleteMany({
+      where: { id: printerId, providerId: provider.id },
+    });
+  }
+
   async update(id: string, data: any) {
     return this.prisma.provider.update({
       where: { id },

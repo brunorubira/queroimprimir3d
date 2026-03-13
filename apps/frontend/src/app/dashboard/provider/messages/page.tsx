@@ -18,7 +18,7 @@ interface Conversation {
   messages: { content: string }[];
 }
 
-export default function ClientMessagesPage() {
+export default function ProviderMessagesPage() {
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [messages, setMessages] = useState<Message[]>([]);
   const [loading, setLoading] = useState(true);
@@ -54,25 +54,14 @@ export default function ClientMessagesPage() {
     }
   }, []);
 
-  // Initial load
   useEffect(() => { fetchConversations(); }, []);
-
-  // Load messages when switching conversation
-  useEffect(() => {
-    if (activeConv) fetchMessages(activeConv);
-  }, [activeConv, fetchMessages]);
-
-  // Polling every 3 seconds for real-time feel
+  useEffect(() => { if (activeConv) fetchMessages(activeConv); }, [activeConv, fetchMessages]);
   useEffect(() => {
     if (!activeConv) return;
     const interval = setInterval(() => fetchMessages(activeConv), 3000);
     return () => clearInterval(interval);
   }, [activeConv, fetchMessages]);
-
-  // Scroll to bottom when messages change
-  useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
+  useEffect(() => { messagesEndRef.current?.scrollIntoView({ behavior: "smooth" }); }, [messages]);
 
   const sendMessage = async () => {
     if (!messageInput.trim() || !activeConv || sending) return;
@@ -90,14 +79,12 @@ export default function ClientMessagesPage() {
     setSending(false);
   };
 
-  const getInterlocutor = (conv: Conversation) => {
-    return conv.participants.find(p => p.user.id !== currentUser?.id)?.user?.name || "Parceiro";
-  };
+  const getInterlocutor = (conv: Conversation) =>
+    conv.participants.find(p => p.user.id !== currentUser?.id)?.user?.name || "Cliente";
 
   const filteredConvs = conversations.filter(c =>
     getInterlocutor(c).toLowerCase().includes(searchQuery.toLowerCase())
   );
-
   const activeConvData = conversations.find(c => c.id === activeConv);
 
   if (loading) {
@@ -110,31 +97,30 @@ export default function ClientMessagesPage() {
 
   return (
     <div className="h-[calc(100vh-12rem)] flex gap-6">
-      {/* Sidebar List */}
       <div className="w-80 flex flex-col gap-4">
         <div>
-          <div className="technical-label mb-2">Protocolo de Comunicação</div>
+          <div className="technical-label mb-2">Canal de Negociação</div>
           <h1 className="text-3xl font-outfit font-bold text-white tracking-tighter uppercase">
             Central de <span className="gradient-text-pro">Mensagens</span>
           </h1>
-          <p className="text-slate-400 mt-2 font-mono text-xs">Canal direto de negociação com a rede de manufatura.</p>
+          <p className="text-slate-400 mt-2 font-mono text-xs">
+            Converse diretamente com clientes para fechar acordos.
+          </p>
         </div>
-
         <div className="relative mt-2">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-primary opacity-50" />
           <input
             type="text"
             value={searchQuery}
             onChange={e => setSearchQuery(e.target.value)}
-            placeholder="Filtrar conexões..."
-            className="w-full pl-10 pr-4 py-3 bg-slate-900/50 border border-slate-800 rounded-none font-mono text-sm outline-none focus:border-primary focus:bg-slate-900 transition-all text-slate-300 placeholder:text-slate-600"
+            placeholder="Filtrar clientes..."
+            className="w-full pl-10 pr-4 py-3 bg-slate-900/50 border border-slate-800 rounded-none font-mono text-sm outline-none focus:border-primary transition-all text-slate-300 placeholder:text-slate-600"
           />
         </div>
-
         <div className="flex-1 overflow-y-auto space-y-2 pr-1">
           {filteredConvs.length === 0 ? (
             <div className="text-center py-8 text-slate-500 font-mono text-xs uppercase tracking-widest">
-              Nenhum canal ativo.
+              Nenhum canal ativo. Inicie uma conversa em um lead.
             </div>
           ) : (
             filteredConvs.map(conv => (
@@ -157,9 +143,7 @@ export default function ClientMessagesPage() {
                     <User className="w-5 h-5" />
                   </div>
                   <div className="min-w-0 flex-1">
-                    <div className="font-bold font-outfit uppercase tracking-tight truncate text-sm">
-                      {getInterlocutor(conv)}
-                    </div>
+                    <div className="font-bold font-outfit uppercase tracking-tight truncate text-sm">{getInterlocutor(conv)}</div>
                     <div className="font-mono text-[10px] text-slate-500 truncate mt-1">
                       {conv.messages[0]?.content || "Aguardando transmissão..."}
                     </div>
@@ -171,7 +155,6 @@ export default function ClientMessagesPage() {
         </div>
       </div>
 
-      {/* Chat View */}
       <div className="flex-1 pro-card bg-slate-950/50 border-slate-800 flex flex-col relative overflow-hidden backdrop-blur-md">
         {activeConv && activeConvData ? (
           <>
@@ -181,22 +164,18 @@ export default function ClientMessagesPage() {
                 <User className="w-5 h-5" />
               </div>
               <div>
-                <span className="font-bold font-outfit text-white uppercase tracking-tight block">
-                  {getInterlocutor(activeConvData)}
-                </span>
+                <span className="font-bold font-outfit text-white uppercase tracking-tight block">{getInterlocutor(activeConvData)}</span>
                 <span className="text-[9px] font-mono text-primary uppercase tracking-widest flex items-center gap-1">
                   <span className="w-1.5 h-1.5 bg-primary rounded-full animate-pulse block" /> Conexão Estável
                 </span>
               </div>
             </div>
-
             <div className="flex-1 overflow-y-auto p-6 space-y-3 relative z-10">
               <div className="flex justify-center mb-4">
                 <span className="text-[9px] font-mono uppercase font-bold tracking-widest text-slate-500 border border-slate-800/50 bg-slate-900/50 px-4 py-1.5">
                   Início da conversa
                 </span>
               </div>
-
               {messages.length === 0 ? (
                 <div className="text-center py-16">
                   <p className="text-slate-500 font-mono text-xs uppercase tracking-widest">Nenhuma mensagem ainda. Inicie a conversa.</p>
@@ -215,9 +194,7 @@ export default function ClientMessagesPage() {
                       <div className={cn("max-w-[70%] space-y-1", isMine ? "items-end" : "items-start")}>
                         <div className={cn(
                           "px-4 py-3 font-mono text-sm leading-relaxed",
-                          isMine
-                            ? "bg-primary/20 border border-primary/30 text-white"
-                            : "bg-slate-900 border border-slate-800 text-slate-300"
+                          isMine ? "bg-primary/20 border border-primary/30 text-white" : "bg-slate-900 border border-slate-800 text-slate-300"
                         )}>
                           {msg.content}
                         </div>
@@ -231,7 +208,6 @@ export default function ClientMessagesPage() {
               )}
               <div ref={messagesEndRef} />
             </div>
-
             <div className="p-4 border-t border-slate-800/80 bg-slate-900/40 relative z-10">
               <div className="flex gap-2">
                 <input
@@ -250,9 +226,6 @@ export default function ClientMessagesPage() {
                   <Send className="w-4 h-4 ml-[-2px]" />
                 </button>
               </div>
-              <div className="mt-2 text-right">
-                <span className="text-[8px] font-mono text-slate-600 uppercase tracking-widest">Criptografia Ponta a Ponta Ativa</span>
-              </div>
             </div>
           </>
         ) : (
@@ -263,7 +236,7 @@ export default function ClientMessagesPage() {
             <div className="space-y-2">
               <h2 className="text-2xl font-outfit font-bold text-white uppercase tracking-tight">Canal de Comunicação</h2>
               <p className="text-slate-500 font-mono text-xs max-w-sm mx-auto leading-relaxed">
-                Selecione um hub parceiro no terminal à esquerda para iniciar a negociação.
+                Selecione um cliente à esquerda ou inicie uma conversa em um lead para negociar.
               </p>
             </div>
           </div>

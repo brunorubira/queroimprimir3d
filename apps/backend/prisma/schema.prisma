@@ -58,6 +58,7 @@ model User {
 model Provider {
   id          String   @id @default(uuid())
   bio         String?
+  location    String?
   rating      Float    @default(0)
   isVerified  Boolean  @default(false)
   userId      String   @unique

@@ -6,16 +6,33 @@ export class ConversationsService {
   constructor(private prisma: PrismaService) {}
 
   async findOrCreate(userIds: string[]) {
-    // Basic logic to find a conversation between exactly these users or create a new one
-    // In a real app, this would be more robust
-    const conversation = await this.prisma.conversation.create({
-      data: {
-        participants: {
-          create: userIds.map(id => ({ userId: id })),
-        },
+    // Check if a conversation already exists between exactly these users
+    const existing = await this.prisma.conversation.findFirst({
+      where: {
+        AND: userIds.map((id) => ({
+          participants: { some: { userId: id } },
+        })),
+      },
+      include: {
+        participants: { include: { user: { select: { name: true, id: true } } } },
+        messages: { take: 1, orderBy: { createdAt: 'desc' } },
       },
     });
-    return conversation;
+
+    if (existing) return existing;
+
+    // Create a new conversation
+    return this.prisma.conversation.create({
+      data: {
+        participants: {
+          create: userIds.map((id) => ({ userId: id })),
+        },
+      },
+      include: {
+        participants: { include: { user: { select: { name: true, id: true } } } },
+        messages: { take: 1, orderBy: { createdAt: 'desc' } },
+      },
+    });
   }
 
   async findByUser(userId: string) {
@@ -24,8 +41,22 @@ export class ConversationsService {
         participants: { some: { userId } },
       },
       include: {
-        participants: { include: { user: { select: { name: true } } } },
+        participants: { include: { user: { select: { name: true, id: true } } } },
         messages: { take: 1, orderBy: { createdAt: 'desc' } },
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+  }
+
+  async findById(id: string) {
+    return this.prisma.conversation.findUnique({
+      where: { id },
+      include: {
+        participants: { include: { user: { select: { name: true, id: true } } } },
+        messages: {
+          orderBy: { createdAt: 'asc' },
+          include: { sender: { select: { name: true, id: true } } },
+        },
       },
     });
   }
